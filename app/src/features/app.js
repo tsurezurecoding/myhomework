@@ -8,8 +8,8 @@ const LABELS = {
   allTasks: "\u5b8c\u4e86\u542b\u3080\u8ab2\u984c",
   lessonScope: "\u6388\u696d\u6e08\u307f\u307e\u3067",
   finalScope: "\u671f\u672b\u7bc4\u56f2\u307e\u3067",
-  withMidterm: "\u4e2d\u9593\u7bc4\u56f2\u542b\u3080",
-  withoutMidterm: "\u4e2d\u9593\u7bc4\u56f2\u306a\u3057",
+  finalOnly: "\u0031\u5b66\u671f\u671f\u672b\u306e\u307f",
+  finalWithMidterm: "\u0031\u5b66\u671f\u671f\u672b\u002b\u0031\u5b66\u671f\u4e2d\u9593",
   unset: "\u672a\u8a2d\u5b9a",
   noTaskName: "\u8ab2\u984c\u540d\u306a\u3057",
   noMatch: "\u8a72\u5f53\u3059\u308b\u8ab2\u984c\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
@@ -92,8 +92,9 @@ function currentFilters() {
 
 function scopeMatches(item, filters) {
   if (filters.scope === "lesson") return item.lessonProgress === "done";
-  if (item.testRange === RANGE_FINAL) return true;
-  return filters.includeMidterm && item.testRange === RANGE_MIDTERM;
+  const isFinalRange = item.testRange === RANGE_FINAL;
+  const isMidtermRange = item.testRange === RANGE_MIDTERM;
+  return isFinalRange || (filters.includeMidterm && isMidtermRange);
 }
 
 function scopedItems() {
@@ -121,7 +122,7 @@ function renderList(visible) {
   const filters = currentFilters();
   const scopeText = filters.scope === "lesson" ? LABELS.lessonScope : LABELS.finalScope;
   const completionText = filters.completion === "remaining" ? LABELS.remainingTasks : LABELS.allTasks;
-  const midtermText = filters.scope === "final" ? ` / ${filters.includeMidterm ? LABELS.withMidterm : LABELS.withoutMidterm}` : "";
+  const midtermText = filters.scope === "final" ? ` / ${filters.includeMidterm ? LABELS.finalWithMidterm : LABELS.finalOnly}` : "";
   elements.listTitle.textContent = completionText;
   elements.listSubtitle.textContent = `${scopeText}${midtermText} / ${visible.length}${LABELS.itemUnit}`;
 
