@@ -1,339 +1,210 @@
-const STORAGE_KEY = "homework-progress-all-subjects-v1";
-
-let subjects = applySavedState(structuredClone(window.APP_DATA || []));
-let activeSubject = "all";
-let schoolFilter = "nextTest";
-let activeView = "tasks";
-
-const elements = {
-  summaryLine: document.querySelector("#summaryLine"),
-  subjectTabs: document.querySelector("#subjectTabs"),
-  schoolFilter: document.querySelector("#schoolFilter"),
-  materialFilterWrap: document.querySelector("#materialFilterWrap"),
-  materialFilter: document.querySelector("#materialFilter"),
-  visibleCount: document.querySelector("#visibleCount"),
-  progressBoard: document.querySelector("#progressBoard"),
-  scopeSettingsButton: document.querySelector("#scopeSettingsButton"),
-  doneSettingsButton: document.querySelector("#doneSettingsButton"),
-  resetSampleButton: document.querySelector("#resetSampleButton"),
-  exportButton: document.querySelector("#exportButton"),
+const STORAGE_KEY = "myhomework-task-overrides-v1";
+const RANGE_MIDTERM = "\u0031\u5b66\u671f\u4e2d\u9593";
+const RANGE_FINAL = "\u0031\u5b66\u671f\u671f\u672b";
+const LABELS = {
+  remaining: "\u672a\u5b8c\u4e86",
+  completed: "\u5b8c\u4e86",
+  remainingTasks: "\u6b8b\u3063\u3066\u3044\u308b\u8ab2\u984c",
+  allTasks: "\u5b8c\u4e86\u542b\u3080\u8ab2\u984c",
+  lessonScope: "\u6388\u696d\u6e08\u307f\u307e\u3067",
+  finalScope: "\u671f\u672b\u7bc4\u56f2\u307e\u3067",
+  withMidterm: "\u4e2d\u9593\u7bc4\u56f2\u542b\u3080",
+  withoutMidterm: "\u4e2d\u9593\u7bc4\u56f2\u306a\u3057",
+  unset: "\u672a\u8a2d\u5b9a",
+  noTaskName: "\u8ab2\u984c\u540d\u306a\u3057",
+  noMatch: "\u8a72\u5f53\u3059\u308b\u8ab2\u984c\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
+  itemUnit: "\u4ef6",
+  status: "\u72b6\u614b",
+  subject: "\u79d1\u76ee",
+  scope: "\u7bc4\u56f2",
+  testRange: "\u30c6\u30b9\u30c8\u7bc4\u56f2",
+  textbookRange: "\u6559\u79d1\u66f8\u7bc4\u56f2",
+  material: "\u6559\u6750",
+  task: "\u8ab2\u984c",
+  csvName: "\u5b66\u7fd2\u8ab2\u984c\u30ea\u30b9\u30c8.csv",
 };
 
-function applySavedState(data) {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return data;
+let items = applySavedStatus(window.HOMEWORK_ITEMS || []);
+
+const elements = {
+  scopeLesson: document.querySelector("#scopeLesson"),
+  scopeFinal: document.querySelector("#scopeFinal"),
+  completionRemaining: document.querySelector("#completionRemaining"),
+  completionAll: document.querySelector("#completionAll"),
+  includeMidterm: document.querySelector("#includeMidterm"),
+  visibleCount: document.querySelector("#visibleCount"),
+  remainingCount: document.querySelector("#remainingCount"),
+  completedCount: document.querySelector("#completedCount"),
+  rangeCount: document.querySelector("#rangeCount"),
+  totalCount: document.querySelector("#totalCount"),
+  listTitle: document.querySelector("#listTitle"),
+  listSubtitle: document.querySelector("#listSubtitle"),
+  taskList: document.querySelector("#taskList"),
+};
+
+function applySavedStatus(source) {
+  const saved = readSavedStatus();
+  return source.map((item) => ({ ...item, status: saved[item.id] || item.status }));
+}
+
+function readSavedStatus() {
   try {
-    const state = JSON.parse(saved);
-    data.forEach((subject) => {
-      subject.rows.forEach((row) => {
-        const savedRow = state.rows?.[row.id];
-        if (savedRow?.schoolStatus) row.schoolStatus = savedRow.schoolStatus;
-        row.materials.forEach((material) => {
-          const savedMaterial = state.materials?.[material.id];
-          if (savedMaterial?.status) material.status = savedMaterial.status;
-        });
-      });
-    });
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   } catch {
-    return data;
+    return {};
   }
-  return data;
 }
 
-function saveState() {
-  const rows = {};
-  const materials = {};
-  subjects.forEach((subject) => {
-    subject.rows.forEach((row) => {
-      rows[row.id] = { schoolStatus: row.schoolStatus };
-      row.materials.forEach((material) => {
-        materials[material.id] = { status: material.status };
-      });
-    });
-  });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ rows, materials }));
+function saveStatuses() {
+  const changed = {};
+  for (const item of items) changed[item.id] = item.status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(changed));
 }
 
-function getActiveSubjects() {
-  if (activeSubject === "all") return subjects;
-  return subjects.filter((subject) => subject.id === activeSubject);
+function subjects() {
+  return [...new Set(items.map((item) => item.subject).filter(Boolean))];
 }
 
-function getRows(sourceSubjects = getActiveSubjects()) {
-  return sourceSubjects.flatMap((subject) => subject.rows.map((row) => ({ ...row, subjectLabel: subject.label })));
+function subjectClass(subject) {
+  const index = subjects().indexOf(subject);
+  return [
+    "subject-english",
+    "subject-japanese",
+    "subject-science",
+    "subject-math",
+    "subject-geography",
+    "subject-history",
+    "subject-practical",
+  ][index] || "subject-default";
 }
 
-function getVisibleRows() {
-  const materialMode = elements.materialFilter.value;
-  return getRows().filter((row) => {
-    if (schoolFilter === "nextTest" && !["learned", "test"].includes(row.schoolStatus)) return false;
-    if (!["all", "nextTest"].includes(schoolFilter) && row.schoolStatus !== schoolFilter) return false;
-    if (activeView === "tasks" && schoolFilter === "all" && row.schoolStatus === "unlearned") return false;
-    if (materialMode === "unfinished" && !row.materials.some((material) => material.status !== "checked")) return false;
-    if (materialMode === "checked" && !row.materials.length) return false;
-    if (materialMode === "checked" && row.materials.some((material) => material.status !== "checked")) return false;
-    return true;
-  });
+function statusLabel(status) {
+  return status === "completed" ? LABELS.completed : LABELS.remaining;
 }
 
-function allRows() {
-  return getRows(subjects);
+function currentFilters() {
+  return {
+    scope: elements.scopeLesson.checked ? "lesson" : "final",
+    completion: elements.completionRemaining.checked ? "remaining" : "all",
+    includeMidterm: elements.includeMidterm.checked,
+  };
 }
 
-function allMaterials(rows = allRows()) {
-  return rows.flatMap((row) => row.materials);
+function scopeMatches(item, filters) {
+  if (filters.scope === "lesson") return item.lessonProgress === "done";
+  if (item.testRange === RANGE_FINAL) return true;
+  return filters.includeMidterm && item.testRange === RANGE_MIDTERM;
 }
 
-function renderSummary() {
-  const rows = getRows();
-  const materials = allMaterials(rows);
-  const learned = rows.filter((row) => row.schoolStatus === "learned").length;
-  const tests = rows.filter((row) => row.schoolStatus === "test").length;
-  const checked = materials.filter((material) => material.status === "checked").length;
-  const unfinished = materials.filter((material) => material.status !== "checked").length;
-  const label = activeSubject === "all" ? "全部" : subjects.find((subject) => subject.id === activeSubject)?.label || "";
-  const viewLabel = activeView === "scope" ? "範囲設定中" : "残課題";
-  elements.summaryLine.textContent = `${viewLabel} | ${label} | 項目 ${rows.length} | 学習済 ${learned} | テスト範囲 ${tests} | 教材OK ${checked} | 教材未 ${unfinished}`;
+function scopedItems() {
+  const filters = currentFilters();
+  return items.filter((item) => scopeMatches(item, filters));
 }
 
-function renderTabs() {
-  elements.subjectTabs.innerHTML = "";
-  const tabItems = [{ id: "all", label: "全部", icon: "全" }, ...subjects.map(({ id, label }) => ({ id, label, icon: subjectIcon(label) }))];
-  tabItems.forEach((subject) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `tab-button${activeSubject === subject.id ? " active" : ""}`;
-    button.innerHTML = `<span class="tab-icon">${subject.icon}</span><span>${subject.label}</span>`;
-    button.addEventListener("click", () => {
-      activeSubject = subject.id;
-      render();
-    });
-    elements.subjectTabs.appendChild(button);
-  });
+function filteredItems() {
+  const filters = currentFilters();
+  return scopedItems().filter((item) => filters.completion === "all" || item.status === "remaining");
 }
 
-function updateSchoolFilterOptions() {
-  const options = activeView === "tasks"
-    ? [["all", "すべて"], ["nextTest", "次回テスト範囲まで"], ["learned", "学習済"], ["test", "テスト範囲"]]
-    : [["all", "すべて"], ["unlearned", "未習"], ["learned", "学習済"], ["test", "テスト範囲"]];
-  if (!options.some(([id]) => id === schoolFilter)) schoolFilter = options[0][0];
-  elements.schoolFilter.innerHTML = "";
-  options.forEach(([value, label]) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    elements.schoolFilter.appendChild(option);
-  });
-  elements.schoolFilter.value = schoolFilter;
+function renderSummary(visible) {
+  const scoped = scopedItems();
+  const remaining = scoped.filter((item) => item.status === "remaining").length;
+  const completed = scoped.filter((item) => item.status === "completed").length;
+  elements.visibleCount.textContent = visible.length;
+  elements.remainingCount.textContent = remaining;
+  elements.completedCount.textContent = completed;
+  elements.rangeCount.textContent = new Set(scoped.map((item) => item.testRange).filter(Boolean)).size;
+  elements.totalCount.textContent = `${scoped.length}${LABELS.itemUnit}`;
 }
 
-function nextSchoolStatus(status) {
-  if (status === "unlearned") return "learned";
-  if (status === "learned") return "test";
-  return "unlearned";
-}
+function renderList(visible) {
+  const filters = currentFilters();
+  const scopeText = filters.scope === "lesson" ? LABELS.lessonScope : LABELS.finalScope;
+  const completionText = filters.completion === "remaining" ? LABELS.remainingTasks : LABELS.allTasks;
+  const midtermText = filters.scope === "final" ? ` / ${filters.includeMidterm ? LABELS.withMidterm : LABELS.withoutMidterm}` : "";
+  elements.listTitle.textContent = completionText;
+  elements.listSubtitle.textContent = `${scopeText}${midtermText} / ${visible.length}${LABELS.itemUnit}`;
 
-function schoolLabel(status) {
-  if (status === "test") return "テスト";
-  if (status === "learned") return "済";
-  return "未習";
-}
-
-function subjectIcon(label) {
-  if (label.startsWith("英")) return "英";
-  if (label.startsWith("数")) return "数";
-  if (label.startsWith("国")) return "国";
-  if (label.startsWith("理")) return "理";
-  if (label.startsWith("社")) return "社";
-  return label.slice(0, 1);
-}
-
-function nextMaterialStatus(status) {
-  if (status === "empty") return "done";
-  if (status === "done") return "checked";
-  return "empty";
-}
-
-function materialLabel(material) {
-  if (material.kind === "memory") {
-    if (material.status === "checked") return "OK";
-    if (material.status === "done") return "見た";
-    return "未";
+  if (!visible.length) {
+    elements.taskList.className = "task-list empty";
+    elements.taskList.textContent = LABELS.noMatch;
+    return;
   }
-  if (material.status === "checked") return "丸";
-  if (material.status === "done") return "済";
-  return "未";
+
+  elements.taskList.className = "task-list row-mode";
+  elements.taskList.innerHTML = groupedMarkup(visible);
 }
 
-function findOriginalRow(rowId) {
-  for (const subject of subjects) {
-    const row = subject.rows.find((candidate) => candidate.id === rowId);
-    if (row) return row;
-  }
-  return null;
+function groupedMarkup(visible) {
+  return subjects()
+    .map((subject) => {
+      const subjectItems = visible.filter((item) => item.subject === subject);
+      if (!subjectItems.length) return "";
+      const remaining = subjectItems.filter((item) => item.status === "remaining").length;
+      return `
+        <section class="subject-section ${subjectClass(subject)}">
+          <header class="subject-heading">
+            <span>${escapeHtml(subject)}</span>
+            <b>${remaining}</b>
+          </header>
+          <div class="subject-rows">
+            ${subjectItems.map(rowMarkup).join("")}
+          </div>
+        </section>
+      `;
+    })
+    .join("");
 }
 
-function renderBoard() {
-  const rows = getVisibleRows();
-  elements.visibleCount.textContent = `${rows.length}件`;
-  elements.progressBoard.innerHTML = "";
-
-  const list = document.createElement("div");
-  list.className = "block-list";
-  const renderRows = activeView === "tasks" ? groupTaskRows(rows) : [{ group: "", rows: rows.map((row) => ({ row })) }];
-  renderRows.forEach((group) => {
-    if (group.group) {
-      const title = document.createElement("div");
-      title.className = "group-title";
-      title.textContent = group.group;
-      list.appendChild(title);
-    }
-    group.rows.forEach((entry) => {
-    const row = entry.row;
-    const original = findOriginalRow(row.id);
-    const block = document.createElement("article");
-    block.className = `study-block ${row.schoolStatus} ${activeView}`;
-
-    const header = document.createElement("div");
-    header.className = `study-header ${activeView === "tasks" ? "task-header" : ""}`;
-    const schoolStatus = document.createElement("span");
-    schoolStatus.className = `row-progress ${row.schoolStatus}`;
-    schoolStatus.textContent = schoolLabel(row.schoolStatus);
-
-    const schoolButton = document.createElement("button");
-    schoolButton.type = "button";
-    schoolButton.className = "change-button";
-    schoolButton.textContent = "切替";
-    schoolButton.addEventListener("click", () => {
-      original.schoolStatus = nextSchoolStatus(original.schoolStatus);
-      saveState();
-      render();
-    });
-
-    const titleWrap = document.createElement("div");
-    titleWrap.className = "study-title";
-    const icon = document.createElement("span");
-    icon.className = "subject-badge";
-    icon.textContent = subjectIcon(row.subjectLabel);
-    const meta = document.createElement("span");
-    meta.className = "item-meta-line";
-    meta.textContent = activeView === "tasks" ? `${schoolLabel(row.schoolStatus)} / ${activeSubject === "all" ? row.subjectLabel : row.unit}` : (activeSubject === "all" ? `${row.subjectLabel} / ${row.unit}` : row.unit);
-    const title = document.createElement("span");
-    title.className = "item-title-line";
-    title.textContent = row.item;
-    titleWrap.append(icon, meta, title);
-    header.append(schoolStatus, titleWrap, schoolButton);
-    block.appendChild(header);
-
-    if (activeView === "tasks") {
-      const materialGrid = document.createElement("div");
-      materialGrid.className = "material-grid";
-      const materialEntries = row.materials
-        .map((material, index) => ({ material, index }))
-        .filter(({ material }) => !entry.materialType || material.type === entry.materialType);
-      materialEntries.forEach(({ material, index }) => {
-        const item = document.createElement("div");
-        item.className = `material-check ${material.status} ${material.kind === "memory" ? "memorize" : ""}`;
-        item.title = `${material.type} / ${material.unit} / ${material.title}`;
-
-        const type = document.createElement("span");
-        type.className = "material-label";
-        type.textContent = material.type;
-        const state = document.createElement("span");
-        state.className = "state";
-        state.textContent = materialLabel(material);
-        const text = document.createElement("span");
-        text.className = "cell-text";
-        text.textContent = material.title;
-        const sub = document.createElement("span");
-        sub.className = "cell-subtext";
-        sub.textContent = material.unit || row.unit;
-        const change = document.createElement("button");
-        change.type = "button";
-        change.className = "change-button material-change";
-        change.textContent = "切替";
-        change.addEventListener("click", () => {
-          original.materials[index].status = nextMaterialStatus(original.materials[index].status);
-          saveState();
-          render();
-        });
-        item.append(type, state, text, sub, change);
-        materialGrid.appendChild(item);
-      });
-
-      if (!row.materials.length) {
-        const empty = document.createElement("div");
-        empty.className = "no-materials";
-        empty.textContent = "対応教材なし";
-        materialGrid.appendChild(empty);
-      }
-
-      block.appendChild(materialGrid);
-    }
-    list.appendChild(block);
-    });
-  });
-  elements.progressBoard.appendChild(list);
+function rowMarkup(item) {
+  return `
+    <article class="task-row ${subjectClass(item.subject)} ${item.status}">
+      <button class="status-button ${item.status}" data-id="${escapeHtml(item.id)}" type="button">${statusLabel(item.status)}</button>
+      <span class="range-pill">${escapeHtml(scopeLabel(item))}</span>
+      <span class="book-name">${escapeHtml(item.material || LABELS.unset)}</span>
+      <span class="task-name">${escapeHtml(item.task || LABELS.noTaskName)}</span>
+      <span class="textbook-range">${escapeHtml(item.textbookRange || LABELS.unset)}</span>
+      <span class="test-range">${escapeHtml(item.testRange || LABELS.unset)}</span>
+    </article>
+  `;
 }
 
-function groupTaskRows(rows) {
-  const groups = new Map();
-  rows.forEach((row) => {
-    const types = row.materials.length ? [...new Set(row.materials.map((material) => material.type))] : ["対応教材なし"];
-    types.forEach((type) => {
-      if (!groups.has(type)) groups.set(type, []);
-      groups.get(type).push({ row, materialType: type === "対応教材なし" ? null : type });
-    });
-  });
-  return [...groups.entries()].map(([group, groupRows]) => ({ group, rows: groupRows }));
+function scopeLabel(item) {
+  if (item.lessonProgress === "done") return LABELS.lessonScope;
+  return item.testRange || LABELS.unset;
 }
 
 function render() {
-  renderSummary();
-  renderTabs();
-  updateSchoolFilterOptions();
-  elements.materialFilterWrap.style.display = activeView === "tasks" ? "inline-flex" : "none";
-  elements.doneSettingsButton.style.display = activeView === "scope" ? "inline-flex" : "none";
-  elements.scopeSettingsButton.style.display = activeView === "tasks" ? "inline-flex" : "none";
-  renderBoard();
+  const visible = filteredItems();
+  renderSummary(visible);
+  renderList(visible);
 }
 
-elements.materialFilter.addEventListener("change", render);
-elements.schoolFilter.addEventListener("change", () => {
-  schoolFilter = elements.schoolFilter.value;
+function toggleStatus(id) {
+  const item = items.find((candidate) => candidate.id === id);
+  if (!item) return;
+  item.status = item.status === "completed" ? "remaining" : "completed";
+  saveStatuses();
   render();
-});
+}
 
-elements.scopeSettingsButton.addEventListener("click", () => {
-  activeView = "scope";
-  schoolFilter = "all";
-  render();
-});
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-elements.doneSettingsButton.addEventListener("click", () => {
-  activeView = "tasks";
-  schoolFilter = "nextTest";
-  render();
+document.querySelectorAll('input[name="scopeMode"], input[name="completionMode"]').forEach((input) => {
+  input.addEventListener("change", render);
 });
-
-elements.resetSampleButton.addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEY);
-  subjects = structuredClone(window.APP_DATA || []);
-  render();
-});
-
-elements.exportButton.addEventListener("click", async () => {
-  const text = JSON.stringify(subjects, null, 2);
-  try {
-    await navigator.clipboard.writeText(text);
-    elements.exportButton.textContent = "コピーしました";
-    setTimeout(() => {
-      elements.exportButton.textContent = "保存データを書き出す";
-    }, 1400);
-  } catch {
-    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(text)}`;
-    window.open(dataUrl, "_blank");
-  }
+elements.includeMidterm.addEventListener("change", render);
+elements.taskList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-id]");
+  if (!button) return;
+  toggleStatus(button.dataset.id);
 });
 
 render();
