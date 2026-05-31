@@ -3,63 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>学習進度チェック</title>
+    <title>&#x5b66;&#x7fd2;&#x8ab2;&#x984c;&#x30ea;&#x30b9;&#x30c8;</title>
     <link rel="stylesheet" href="./src/shared/styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <header class="topbar compact-topbar">
-        <div>
-          <p class="eyebrow">学習進度チェック</p>
-          <h1>学校の範囲から教材の対応を見る</h1>
-        </div>
-        <div class="topbar-actions">
-          <button class="ghost-button" id="scopeSettingsButton" type="button">範囲設定</button>
-          <button class="primary-button" id="doneSettingsButton" type="button">完了して戻る</button>
-          <button class="ghost-button" id="resetSampleButton" type="button">状態を戻す</button>
-          <button class="ghost-button" id="exportButton" type="button">保存データを書き出す</button>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="title-block">
+          <p class="eyebrow">&#x5b66;&#x7fd2;&#x8a08;&#x753b;</p>
+          <h1>&#x30c6;&#x30b9;&#x30c8;&#x8ab2;&#x984c;&#x30dc;&#x30fc;&#x30c9;</h1>
+          <p class="header-note">&#x6388;&#x696d;&#x6e08;&#x307f;&#x307e;&#x3067;&#x304b;&#x3001;&#x671f;&#x672b;&#x7bc4;&#x56f2;&#x307e;&#x3067;&#x304b;&#x3092;&#x9078;&#x3093;&#x3067;&#x3001;&#x5fc5;&#x8981;&#x306a;&#x8ab2;&#x984c;&#x3060;&#x3051;&#x3092;&#x4e00;&#x89a7;&#x3067;&#x304d;&#x307e;&#x3059;&#x3002;</p>
         </div>
       </header>
 
-      <main>
-        <section class="summary-line" id="summaryLine" aria-label="全体集計"></section>
+      <section class="control-panel" aria-label="filters">
+        <div class="filters compact-controls">
+          <fieldset class="choice-group">
+            <legend>&#x7bc4;&#x56f2;</legend>
+            <label><input type="radio" name="scopeMode" value="lesson" id="scopeLesson" /> <span>&#x6388;&#x696d;&#x6e08;&#x307f;&#x307e;&#x3067;</span></label>
+            <label><input type="radio" name="scopeMode" value="final" id="scopeFinal" checked /> <span>&#x671f;&#x672b;&#x7bc4;&#x56f2;&#x307e;&#x3067;</span></label>
+          </fieldset>
+          <fieldset class="choice-group">
+            <legend>&#x6761;&#x4ef6;</legend>
+            <label><input type="radio" name="completionMode" value="remaining" id="completionRemaining" checked /> <span>&#x672a;&#x5b8c;&#x4e86;&#x306e;&#x307f;</span></label>
+            <label><input type="radio" name="completionMode" value="all" id="completionAll" /> <span>&#x5b8c;&#x4e86;&#x542b;&#x3080;</span></label>
+            <label><input id="includeMidterm" type="checkbox" /> <span>&#x4e2d;&#x9593;&#x7bc4;&#x56f2;&#x3092;&#x542b;&#x3080;</span></label>
+          </fieldset>
+        </div>
+      </section>
 
-        <nav class="subject-tabs" id="subjectTabs" aria-label="教科"></nav>
-
-        <section class="panel board-panel" aria-label="教材対応表">
-          <div class="quickbar" aria-label="絞り込み">
-            <label class="compact-select">
-              <span>範囲</span>
-              <select id="schoolFilter">
-                <option value="all">すべて</option>
-                <option value="nextTest">次回テスト範囲まで</option>
-                <option value="unlearned">未習</option>
-                <option value="learned">学習済</option>
-                <option value="test">テスト範囲</option>
-              </select>
-            </label>
-            <label class="compact-select" id="materialFilterWrap">
-              <span>教材</span>
-              <select id="materialFilter">
-                <option value="all">すべて</option>
-                <option value="unfinished">未完了あり</option>
-                <option value="checked">完了のみ</option>
-              </select>
-            </label>
-            <span id="visibleCount" class="target-subject">0件</span>
+      <section class="task-panel" aria-label="tasks">
+        <div class="list-toolbar">
+          <div>
+            <h2 id="listTitle">&#x8ab2;&#x984c;&#x4e00;&#x89a7;</h2>
+            <p id="listSubtitle">&#x6761;&#x4ef6;&#x306b;&#x5408;&#x3046;&#x8ab2;&#x984c;&#x3092;&#x8868;&#x793a;&#x3057;&#x3066;&#x3044;&#x307e;&#x3059;&#x3002;</p>
           </div>
-          <div class="legend" aria-label="凡例">
-            <span><b class="dot school-unlearned"></b>未習</span>
-            <span><b class="dot school-learned"></b>学習済</span>
-            <span><b class="dot school-test"></b>テスト範囲</span>
-            <span><b class="dot empty-dot"></b>教材未</span>
-            <span><b class="dot done-dot"></b>済</span>
-            <span><b class="dot checked-dot"></b>丸つけ済 / OK</span>
+          <div class="list-counts">
+            <span><b id="visibleCount">0</b>&#x4ef6;&#x8868;&#x793a;</span>
+            <span>&#x6b8b;&#x308a; <b id="remainingCount">0</b></span>
+            <span>&#x5b8c;&#x4e86; <b id="completedCount">0</b></span>
+            <span class="sr-only" id="rangeCount">0</span>
+            <span class="sr-only" id="totalCount">0</span>
           </div>
-          <div id="progressBoard" class="progress-board"></div>
-        </section>
-      </main>
-    </div>
+        </div>
+        <div id="taskList" class="task-list"></div>
+      </section>
+    </main>
 
     <script src="./src/features/app-data.js"></script>
     <script src="./src/features/app.js"></script>
