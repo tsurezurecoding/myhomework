@@ -49,20 +49,28 @@ select {
 }
 
 .app-header {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface);
-  padding: 10px 12px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 36%, rgba(255, 255, 255, 0.12) 72%),
+    url("../../assets/study-desk-banner.svg") center / cover;
+  min-height: 136px;
+  padding: 16px 18px;
   margin-bottom: 8px;
   box-shadow: var(--shadow);
 }
 
 .title-block {
+  position: relative;
+  z-index: 1;
   min-width: 0;
+  max-width: 620px;
 }
 
 .eyebrow {
@@ -80,8 +88,10 @@ p {
 }
 
 h1 {
-  font-size: 1.28rem;
+  font-size: 1.62rem;
   line-height: 1.15;
+  color: #142736;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 h2 {
@@ -89,10 +99,11 @@ h2 {
 }
 
 .header-note {
-  margin-top: 3px;
-  color: var(--muted);
+  margin-top: 6px;
+  color: #475467;
   font-size: 0.8rem;
   font-weight: 700;
+  line-height: 1.55;
 }
 
 .status-button {
@@ -391,6 +402,33 @@ h2 {
   padding: 4px 7px;
 }
 
+.task-row.remaining {
+  border-color: color-mix(in srgb, var(--subject-color, var(--accent)) 44%, #f3bd67);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--subject-color, var(--accent)) 14%, #fff3df),
+    #fffaf2 68%
+  );
+  box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.08);
+}
+
+.task-row.completed {
+  border-color: color-mix(in srgb, var(--subject-color, var(--accent)) 18%, #d8e7dc);
+  border-left-color: color-mix(in srgb, var(--subject-color, var(--accent)) 46%, #b7d9c2);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--subject-color, var(--accent)) 5%, #f4fbf6),
+    #fbfdfb 72%
+  );
+}
+
+.task-row.completed .book-name,
+.task-row.completed .task-name,
+.task-row.completed .textbook-range,
+.task-row.completed .test-range {
+  color: color-mix(in srgb, var(--text) 58%, #8aa196);
+}
+
 .subject-pill {
   display: inline-flex;
   align-items: center;
@@ -454,11 +492,13 @@ h2 {
 
 .status-button.remaining {
   border-color: #f5c775;
+  background: #fff3dc;
   color: var(--remaining);
 }
 
 .status-button.completed {
   border-color: #9bd4ad;
+  background: #edf8ef;
   color: var(--completed);
 }
 
@@ -523,6 +563,18 @@ h2 {
   .list-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .app-header {
+    min-height: 128px;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.82) 58%, rgba(255, 255, 255, 0.36) 100%),
+      url("../../assets/study-desk-banner.svg") center / cover;
+    padding: 14px;
+  }
+
+  h1 {
+    font-size: 1.35rem;
   }
 
   .filters {
