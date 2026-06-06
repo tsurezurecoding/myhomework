@@ -24,7 +24,7 @@ const LABELS = {
   csvName: "\u5b66\u7fd2\u8ab2\u984c\u30ea\u30b9\u30c8.csv",
 };
 
-let items = applySavedStatus(window.HOMEWORK_ITEMS || []);
+let items = applySavedStatus(normalizedHomeworkItems());
 
 const elements = {
   scopeLesson: document.querySelector("#scopeLesson"),
@@ -45,6 +45,30 @@ const elements = {
 function applySavedStatus(source) {
   const saved = readSavedStatus();
   return source.map((item) => ({ ...item, status: saved[item.id] || item.status }));
+}
+
+function normalizedHomeworkItems() {
+  if (Array.isArray(window.HOMEWORK_ITEMS)) return window.HOMEWORK_ITEMS;
+  if (!Array.isArray(window.APP_DATA)) return [];
+
+  return window.APP_DATA.flatMap((subject) =>
+    (subject.rows || []).flatMap((row) => {
+      const materials = row.materials && row.materials.length ? row.materials : [{ id: row.id, type: "", title: row.item, status: "empty" }];
+      return materials.map((material, index) => ({
+        id: material.id || `${row.id}-${index}`,
+        subject: subject.label || subject.id || "",
+        lessonProgress: row.schoolStatus === "unlearned" ? "notYet" : "done",
+        lessonProgressRaw: row.schoolStatus || "",
+        textbook: row.unit || "",
+        textbookRange: row.item || "",
+        testRange: "",
+        material: [material.type, material.unit].filter(Boolean).join(" "),
+        task: material.title || row.item || "",
+        status: material.status === "done" || material.status === "checked" ? "completed" : "remaining",
+        rawStatus: material.status || "",
+      }));
+    })
+  );
 }
 
 function readSavedStatus() {
