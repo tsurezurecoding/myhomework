@@ -1,0 +1,36 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs / temp
+*.log
+tmp/
+temp/
+.codex-*/
+.git.backup-*/
+
+# Local planning / conversation notes
+docs/randy/
+README.md
+app/google-apps-script.js
+/assets/
+data/
+text/
+docs/
+app/src/**/.gitkeep
+app/tests/
+
+# Dependencies / build outputs
+node_modules/
+dist/
+build/
+
+# Generated local artifacts
+outputs/
+*.xlsx
+
+# Generated raster drafts; the app uses the SVG banner asset.
+app/assets/study-desk-banner*.png
+app/assets/study-desk-banner*.webp
