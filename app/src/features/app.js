@@ -1,4 +1,3 @@
-const STORAGE_KEY = "myhomework-task-overrides-v2";
 const RANGE_MIDTERM = "\u0031\u5b66\u671f\u4e2d\u9593";
 const RANGE_FINAL = "\u0031\u5b66\u671f\u671f\u672b";
 const LABELS = {
@@ -26,7 +25,7 @@ const LABELS = {
   csvName: "\u5b66\u7fd2\u8ab2\u984c\u30ea\u30b9\u30c8.csv",
 };
 
-let items = applySavedStatus(normalizedHomeworkItems());
+let items = normalizedHomeworkItems();
 
 const elements = {
   scopeLesson: document.querySelector("#scopeLesson"),
@@ -45,11 +44,6 @@ const elements = {
   listSubtitle: document.querySelector("#listSubtitle"),
   taskList: document.querySelector("#taskList"),
 };
-
-function applySavedStatus(source) {
-  const saved = readSavedStatus();
-  return source.map((item) => ({ ...item, status: saved[item.id] || item.status }));
-}
 
 function normalizedHomeworkItems() {
   if (Array.isArray(window.HOMEWORK_ITEMS)) return window.HOMEWORK_ITEMS;
@@ -74,20 +68,6 @@ function normalizedHomeworkItems() {
       }));
     })
   );
-}
-
-function readSavedStatus() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveStatuses() {
-  const changed = {};
-  for (const item of items) changed[item.id] = item.status;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(changed));
 }
 
 function subjects() {
@@ -207,7 +187,7 @@ function groupedMarkup(visible) {
 function rowMarkup(item) {
   return `
     <article class="task-row ${subjectClass(item.subject)} ${item.status}">
-      <button class="status-button ${item.status}" data-id="${escapeHtml(item.id)}" type="button">${statusLabel(item.status)}</button>
+      <span class="status-button ${item.status}">${statusLabel(item.status)}</span>
       <span class="range-pill ${isPlannedToday(item) ? "today" : ""}">${escapeHtml(scopeLabel(item))}</span>
       <span class="book-name">${escapeHtml(item.material || LABELS.unset)}</span>
       <span class="task-name">${escapeHtml(item.task || LABELS.noTaskName)}</span>
@@ -229,14 +209,6 @@ function render() {
   renderList(visible);
 }
 
-function toggleStatus(id) {
-  const item = items.find((candidate) => candidate.id === id);
-  if (!item) return;
-  item.status = item.status === "completed" ? "remaining" : "completed";
-  saveStatuses();
-  render();
-}
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -250,10 +222,5 @@ document.querySelectorAll('input[name="scopeMode"], input[name="completionMode"]
   input.addEventListener("change", render);
 });
 elements.includeMidterm.addEventListener("change", render);
-elements.taskList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-id]");
-  if (!button) return;
-  toggleStatus(button.dataset.id);
-});
 
 render();
