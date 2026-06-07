@@ -18,6 +18,7 @@
   --geography: #7c3aed;
   --history: #ea580c;
   --practical: #0f766e;
+  --other: #475467;
 }
 
 * {
@@ -168,6 +169,10 @@ h2 {
 
 .choice-group {
   grid-template-columns: repeat(2, auto);
+}
+
+.choice-group:nth-child(2) {
+  grid-template-columns: repeat(4, auto);
 }
 
 .choice-group legend {
@@ -468,6 +473,11 @@ h2 {
   font-weight: 900;
 }
 
+.range-pill.today {
+  background: #ffe9b8;
+  color: #92400e;
+}
+
 .task-name {
   color: var(--text);
   font-weight: 900;
@@ -534,6 +544,11 @@ h2 {
   --subject-color: var(--practical);
 }
 
+.subject-other,
+.subject-default {
+  --subject-color: var(--other);
+}
+
 @media (max-width: 980px) {
   .filters {
     grid-template-columns: 1fr 1fr;
@@ -545,6 +560,10 @@ h2 {
 
   .task-row {
     grid-template-columns: 70px 100px minmax(140px, 0.8fr) minmax(0, 1fr);
+  }
+
+  .choice-group:nth-child(2) {
+    grid-template-columns: repeat(2, auto);
   }
 
   .textbook-range,

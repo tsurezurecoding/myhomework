@@ -1,4 +1,4 @@
-const STORAGE_KEY = "myhomework-task-overrides-v1";
+const STORAGE_KEY = "myhomework-task-overrides-v2";
 const RANGE_MIDTERM = "\u0031\u5b66\u671f\u4e2d\u9593";
 const RANGE_FINAL = "\u0031\u5b66\u671f\u671f\u672b";
 const LABELS = {
@@ -10,6 +10,8 @@ const LABELS = {
   finalScope: "\u671f\u672b\u7bc4\u56f2\u307e\u3067",
   finalOnly: "\u0031\u5b66\u671f\u671f\u672b\u306e\u307f",
   finalWithMidterm: "\u0031\u5b66\u671f\u671f\u672b\u002b\u0031\u5b66\u671f\u4e2d\u9593",
+  todayOnly: "\u4eca\u65e5\u3084\u308b\u3084\u3064",
+  today: "\u4eca\u65e5",
   unset: "\u672a\u8a2d\u5b9a",
   noTaskName: "\u8ab2\u984c\u540d\u306a\u3057",
   noMatch: "\u8a72\u5f53\u3059\u308b\u8ab2\u984c\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
@@ -30,9 +32,11 @@ const elements = {
   scopeLesson: document.querySelector("#scopeLesson"),
   scopeFinal: document.querySelector("#scopeFinal"),
   completionRemaining: document.querySelector("#completionRemaining"),
+  completionToday: document.querySelector("#completionToday"),
   completionAll: document.querySelector("#completionAll"),
   includeMidterm: document.querySelector("#includeMidterm"),
   visibleCount: document.querySelector("#visibleCount"),
+  todayCount: document.querySelector("#todayCount"),
   remainingCount: document.querySelector("#remainingCount"),
   completedCount: document.querySelector("#completedCount"),
   rangeCount: document.querySelector("#rangeCount"),
@@ -66,6 +70,7 @@ function normalizedHomeworkItems() {
         task: material.title || row.item || "",
         status: material.status === "done" || material.status === "checked" ? "completed" : "remaining",
         rawStatus: material.status || "",
+        plannedDate: "",
       }));
     })
   );
@@ -99,6 +104,7 @@ function subjectClass(subject) {
     "subject-geography",
     "subject-history",
     "subject-practical",
+    "subject-other",
   ][index] || "subject-default";
 }
 
@@ -109,9 +115,21 @@ function statusLabel(status) {
 function currentFilters() {
   return {
     scope: elements.scopeLesson.checked ? "lesson" : "final",
-    completion: elements.completionRemaining.checked ? "remaining" : "all",
+    completion: elements.completionToday.checked ? "today" : elements.completionRemaining.checked ? "remaining" : "all",
     includeMidterm: elements.includeMidterm.checked,
   };
+}
+
+function todayKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isPlannedToday(item) {
+  return item.plannedDate === todayKey() && item.status === "remaining";
 }
 
 function scopeMatches(item, filters) {
@@ -128,14 +146,19 @@ function scopedItems() {
 
 function filteredItems() {
   const filters = currentFilters();
-  return scopedItems().filter((item) => filters.completion === "all" || item.status === "remaining");
+  return scopedItems().filter((item) => {
+    if (filters.completion === "today") return isPlannedToday(item);
+    return filters.completion === "all" || item.status === "remaining";
+  });
 }
 
 function renderSummary(visible) {
   const scoped = scopedItems();
   const remaining = scoped.filter((item) => item.status === "remaining").length;
   const completed = scoped.filter((item) => item.status === "completed").length;
+  const today = scoped.filter(isPlannedToday).length;
   elements.visibleCount.textContent = visible.length;
+  elements.todayCount.textContent = today;
   elements.remainingCount.textContent = remaining;
   elements.completedCount.textContent = completed;
   elements.rangeCount.textContent = new Set(scoped.map((item) => item.testRange).filter(Boolean)).size;
@@ -145,7 +168,7 @@ function renderSummary(visible) {
 function renderList(visible) {
   const filters = currentFilters();
   const scopeText = filters.scope === "lesson" ? LABELS.lessonScope : LABELS.finalScope;
-  const completionText = filters.completion === "remaining" ? LABELS.remainingTasks : LABELS.allTasks;
+  const completionText = filters.completion === "today" ? LABELS.todayOnly : filters.completion === "remaining" ? LABELS.remainingTasks : LABELS.allTasks;
   const midtermText = filters.scope === "final" ? ` / ${filters.includeMidterm ? LABELS.finalWithMidterm : LABELS.finalOnly}` : "";
   elements.listTitle.textContent = completionText;
   elements.listSubtitle.textContent = `${scopeText}${midtermText} / ${visible.length}${LABELS.itemUnit}`;
@@ -185,7 +208,7 @@ function rowMarkup(item) {
   return `
     <article class="task-row ${subjectClass(item.subject)} ${item.status}">
       <button class="status-button ${item.status}" data-id="${escapeHtml(item.id)}" type="button">${statusLabel(item.status)}</button>
-      <span class="range-pill">${escapeHtml(scopeLabel(item))}</span>
+      <span class="range-pill ${isPlannedToday(item) ? "today" : ""}">${escapeHtml(scopeLabel(item))}</span>
       <span class="book-name">${escapeHtml(item.material || LABELS.unset)}</span>
       <span class="task-name">${escapeHtml(item.task || LABELS.noTaskName)}</span>
       <span class="textbook-range">${escapeHtml(item.textbookRange || LABELS.unset)}</span>
@@ -195,6 +218,7 @@ function rowMarkup(item) {
 }
 
 function scopeLabel(item) {
+  if (isPlannedToday(item)) return LABELS.today;
   if (item.lessonProgress === "done") return LABELS.lessonScope;
   return item.testRange || LABELS.unset;
 }
