@@ -2,6 +2,7 @@
 import argparse
 from datetime import date, datetime
 import json
+import re
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -12,6 +13,7 @@ from openpyxl import load_workbook
 DEFAULT_SPREADSHEET_ID = "1IeBaoI0xaE_jQO9TXZBMiEWIoLdxb9tNSdEeCh9Rjbc"
 DEFAULT_OUT = Path(__file__).resolve().parent / "app" / "src" / "features" / "app-data.js"
 COMPLETED_VALUES = {"〇", "○", "完了", "見直し完了"}
+DATED_COMPLETED_RE = re.compile(r"^\d{4}[/-]\d{1,2}[/-]\d{1,2}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?\s*[〇○]$")
 
 
 def cell_text(value):
@@ -24,6 +26,11 @@ def cell_text(value):
     return str(value).strip()
 
 
+def is_completed_value(value):
+    text = cell_text(value)
+    return text in COMPLETED_VALUES or bool(DATED_COMPLETED_RE.match(text))
+
+
 def planned_date(value):
     if value is None:
         return ""
@@ -33,7 +40,7 @@ def planned_date(value):
         return value.isoformat()
 
     text = str(value).strip()
-    if not text or text in COMPLETED_VALUES:
+    if not text or is_completed_value(value):
         return ""
 
     normalized = text.replace("/", "-").replace(".", "-")
@@ -83,14 +90,14 @@ def main():
                 continue
             lesson_progress = cell_text(values[0])
             raw_status = cell_text(values[6])
-            status = "completed" if raw_status in COMPLETED_VALUES else "remaining"
+            status = "completed" if is_completed_value(values[6]) else "remaining"
             due_date = "" if status == "completed" else planned_date(values[6])
             subject_counts[subject] += 1
             items.append(
                 {
                     "id": f"{subject}-{subject_counts[subject]}",
                     "subject": subject,
-                    "lessonProgress": "done" if lesson_progress in COMPLETED_VALUES else "notYet",
+                    "lessonProgress": "done" if is_completed_value(values[0]) else "notYet",
                     "lessonProgressRaw": lesson_progress,
                     "textbook": values[1] or "",
                     "textbookRange": values[2] or "",
