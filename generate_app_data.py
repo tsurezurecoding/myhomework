@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
+from datetime import date, datetime
 import json
 import tempfile
 import urllib.request
@@ -11,6 +12,40 @@ from openpyxl import load_workbook
 DEFAULT_SPREADSHEET_ID = "1IeBaoI0xaE_jQO9TXZBMiEWIoLdxb9tNSdEeCh9Rjbc"
 DEFAULT_OUT = Path(__file__).resolve().parent / "app" / "src" / "features" / "app-data.js"
 COMPLETED_VALUES = {"〇", "○", "完了", "見直し完了"}
+
+
+def cell_text(value):
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(value, date):
+        return value.isoformat()
+    return str(value).strip()
+
+
+def planned_date(value):
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+
+    text = str(value).strip()
+    if not text or text in COMPLETED_VALUES:
+        return ""
+
+    normalized = text.replace("/", "-").replace(".", "-")
+    for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%m-%d"):
+        try:
+            parsed = datetime.strptime(normalized, fmt)
+            if fmt == "%m-%d":
+                parsed = parsed.replace(year=date.today().year)
+            return parsed.date().isoformat()
+        except ValueError:
+            continue
+    return ""
 
 
 def download_sheet(spreadsheet_id):
@@ -46,9 +81,10 @@ def main():
             values = [sheet.cell(row_number, column).value for column in range(1, 8)]
             if not any(values):
                 continue
-            lesson_progress = "" if values[0] is None else str(values[0]).strip()
-            raw_status = "" if values[6] is None else str(values[6]).strip()
+            lesson_progress = cell_text(values[0])
+            raw_status = cell_text(values[6])
             status = "completed" if raw_status in COMPLETED_VALUES else "remaining"
+            due_date = "" if status == "completed" else planned_date(values[6])
             subject_counts[subject] += 1
             items.append(
                 {
@@ -63,6 +99,7 @@ def main():
                     "task": values[5] or "",
                     "status": status,
                     "rawStatus": raw_status,
+                    "plannedDate": due_date,
                 }
             )
 

@@ -26,6 +26,7 @@
           <fieldset class="choice-group">
             <legend>&#x6761;&#x4ef6;</legend>
             <label><input type="radio" name="completionMode" value="remaining" id="completionRemaining" checked /> <span>&#x672a;&#x5b8c;&#x4e86;&#x306e;&#x307f;</span></label>
+            <label><input type="radio" name="completionMode" value="today" id="completionToday" /> <span>&#x4eca;&#x65e5;&#x3084;&#x308b;&#x3084;&#x3064;</span></label>
             <label><input type="radio" name="completionMode" value="all" id="completionAll" /> <span>&#x5b8c;&#x4e86;&#x542b;&#x3080;</span></label>
             <label><input id="includeMidterm" type="checkbox" /> <span>&#x0031;&#x5b66;&#x671f;&#x4e2d;&#x9593;&#x3082;&#x5bfe;&#x8c61;</span></label>
           </fieldset>
@@ -40,6 +41,7 @@
           </div>
           <div class="list-counts">
             <span><b id="visibleCount">0</b>&#x4ef6;&#x8868;&#x793a;</span>
+            <span>&#x4eca;&#x65e5; <b id="todayCount">0</b></span>
             <span>&#x6b8b;&#x308a; <b id="remainingCount">0</b></span>
             <span>&#x5b8c;&#x4e86; <b id="completedCount">0</b></span>
             <span class="sr-only" id="rangeCount">0</span>
