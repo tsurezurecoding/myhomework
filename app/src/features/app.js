@@ -109,7 +109,7 @@ function todayKey() {
 }
 
 function isPlannedToday(item) {
-  return item.plannedDate === todayKey() && item.status === "remaining";
+  return item.plannedDate === todayKey();
 }
 
 function scopeMatches(item, filters) {

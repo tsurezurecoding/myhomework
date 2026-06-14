@@ -12,6 +12,8 @@ from openpyxl import load_workbook
 
 DEFAULT_SPREADSHEET_ID = "1IeBaoI0xaE_jQO9TXZBMiEWIoLdxb9tNSdEeCh9Rjbc"
 DEFAULT_OUT = Path(__file__).resolve().parent / "app" / "src" / "features" / "app-data.js"
+NOTE_HEADER_RE = re.compile(r"備考|メモ")
+DATE_HEADER_RE = re.compile(r"^日付$|予定")
 COMPLETED_VALUES = {"〇", "○", "完了", "見直し完了"}
 DATED_COMPLETED_RE = re.compile(r"^\d{4}[/-]\d{1,2}[/-]\d{1,2}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?\s*[〇○]$")
 
@@ -55,6 +57,32 @@ def planned_date(value):
     return ""
 
 
+def completed_date(value):
+    """「日付＋〇」で完了したセルから完了日(ISO)を返す。日付なし完了（〇・見直し完了等）は空。"""
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    text = cell_text(value)
+    if not DATED_COMPLETED_RE.match(text):
+        return ""
+    match = re.match(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})", text)
+    if not match:
+        return ""
+    try:
+        return date(int(match.group(1)), int(match.group(2)), int(match.group(3))).isoformat()
+    except ValueError:
+        return ""
+
+
+def header_column(sheet, pattern):
+    """ヘッダー行(1行目)から pattern に一致する列番号を返す（無ければ None）。"""
+    for column in range(1, sheet.max_column + 1):
+        if pattern.search(cell_text(sheet.cell(1, column).value)):
+            return column
+    return None
+
+
 def download_sheet(spreadsheet_id):
     url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=xlsx"
     request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -84,6 +112,8 @@ def main():
     for sheet in wb.worksheets:
         subject = sheet.title
         subject_counts[subject] = 0
+        note_col = header_column(sheet, NOTE_HEADER_RE)
+        date_col = header_column(sheet, DATE_HEADER_RE)
         for row_number in range(2, sheet.max_row + 1):
             values = [sheet.cell(row_number, column).value for column in range(1, 8)]
             if not any(values):
@@ -91,7 +121,9 @@ def main():
             lesson_progress = cell_text(values[0])
             raw_status = cell_text(values[6])
             status = "completed" if is_completed_value(values[6]) else "remaining"
-            due_date = "" if status == "completed" else planned_date(values[6])
+            due_date = planned_date(sheet.cell(row_number, date_col).value) if date_col else planned_date(values[6])
+            done_date = completed_date(values[6]) if status == "completed" else ""
+            note = cell_text(sheet.cell(row_number, note_col).value) if note_col else ""
             subject_counts[subject] += 1
             items.append(
                 {
@@ -107,6 +139,8 @@ def main():
                     "status": status,
                     "rawStatus": raw_status,
                     "plannedDate": due_date,
+                    "completedDate": done_date,
+                    "note": note,
                 }
             )
 
