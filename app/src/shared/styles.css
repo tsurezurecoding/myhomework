@@ -401,7 +401,7 @@ h2 {
 
 .task-row {
   display: grid;
-  grid-template-columns: 74px 112px minmax(150px, 0.78fr) minmax(240px, 1.35fr) minmax(130px, 0.7fr) 96px;
+  grid-template-columns: 74px 112px minmax(150px, 0.78fr) minmax(240px, 1.25fr) minmax(130px, 0.7fr) 96px minmax(150px, 0.8fr);
   align-items: center;
   gap: 7px;
   min-height: 34px;
@@ -435,7 +435,8 @@ h2 {
 .task-row.completed .book-name,
 .task-row.completed .task-name,
 .task-row.completed .textbook-range,
-.task-row.completed .test-range {
+.task-row.completed .test-range,
+.task-row.completed .task-note {
   color: color-mix(in srgb, var(--text) 58%, #8aa196);
 }
 
@@ -456,7 +457,8 @@ h2 {
 .book-name,
 .task-name,
 .textbook-range,
-.test-range {
+.test-range,
+.task-note {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -496,6 +498,15 @@ h2 {
 .textbook-range,
 .test-range {
   color: var(--muted);
+}
+
+.task-note {
+  color: #7c4a03;
+  font-weight: 850;
+}
+
+.task-note.empty {
+  visibility: hidden;
 }
 
 .status-button {
@@ -572,7 +583,8 @@ h2 {
   }
 
   .textbook-range,
-  .test-range {
+  .test-range,
+  .task-note.empty {
     display: none;
   }
 }

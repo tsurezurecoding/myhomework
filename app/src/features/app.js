@@ -22,6 +22,7 @@ const LABELS = {
   textbookRange: "\u6559\u79d1\u66f8\u7bc4\u56f2",
   material: "\u6559\u6750",
   task: "\u8ab2\u984c",
+  note: "\u5099\u8003",
   csvName: "\u5b66\u7fd2\u8ab2\u984c\u30ea\u30b9\u30c8.csv",
 };
 
@@ -65,6 +66,7 @@ function normalizedHomeworkItems() {
         status: material.status === "done" || material.status === "checked" ? "completed" : "remaining",
         rawStatus: material.status || "",
         plannedDate: "",
+        note: "",
       }));
     })
   );
@@ -185,6 +187,9 @@ function groupedMarkup(visible) {
 }
 
 function rowMarkup(item) {
+  const noteMarkup = item.note
+    ? `<span class="task-note" title="${escapeHtml(item.note)}">${escapeHtml(LABELS.note)}: ${escapeHtml(item.note)}</span>`
+    : `<span class="task-note empty"></span>`;
   return `
     <article class="task-row ${subjectClass(item.subject)} ${item.status}">
       <span class="status-button ${item.status}">${statusLabel(item.status)}</span>
@@ -193,6 +198,7 @@ function rowMarkup(item) {
       <span class="task-name">${escapeHtml(item.task || LABELS.noTaskName)}</span>
       <span class="textbook-range">${escapeHtml(item.textbookRange || LABELS.unset)}</span>
       <span class="test-range">${escapeHtml(item.testRange || LABELS.unset)}</span>
+      ${noteMarkup}
     </article>
   `;
 }
