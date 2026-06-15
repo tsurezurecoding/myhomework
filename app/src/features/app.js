@@ -189,7 +189,7 @@ function groupedMarkup(visible) {
 function rowMarkup(item) {
   const noteMarkup = item.note
     ? `<span class="task-note" title="${escapeHtml(item.note)}">${escapeHtml(LABELS.note)}: ${escapeHtml(item.note)}</span>`
-    : `<span class="task-note empty"></span>`;
+    : "";
   return `
     <article class="task-row ${subjectClass(item.subject)} ${item.status}">
       <span class="status-button ${item.status}">${statusLabel(item.status)}</span>

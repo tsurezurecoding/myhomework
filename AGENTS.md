@@ -29,3 +29,4 @@ Static homework dashboard for GitHub Pages.
 - Planned dates come from the spreadsheet date column.
 - Completion comes from the completion/check column. Values like `〇`, `○`, and date-plus-check values should be treated as completed by the generator/parser.
 - "今日やるやつ" should include today's planned items, including items already completed today.
+- Notes (`note`) are real display data. Do not squeeze them into a narrow extra grid column; use a wider row/span layout so Japanese notes are readable instead of showing only the first character.

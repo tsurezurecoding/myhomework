@@ -401,7 +401,7 @@ h2 {
 
 .task-row {
   display: grid;
-  grid-template-columns: 74px 112px minmax(150px, 0.78fr) minmax(240px, 1.25fr) minmax(130px, 0.7fr) 96px minmax(150px, 0.8fr);
+  grid-template-columns: 74px 112px minmax(150px, 0.78fr) minmax(240px, 1.35fr) minmax(130px, 0.7fr) 96px;
   align-items: center;
   gap: 7px;
   min-height: 34px;
@@ -501,12 +501,13 @@ h2 {
 }
 
 .task-note {
+  grid-column: 4 / -1;
+  width: 100%;
   color: #7c4a03;
+  font-size: 0.76rem;
   font-weight: 850;
-}
-
-.task-note.empty {
-  visibility: hidden;
+  line-height: 1.35;
+  padding-top: 1px;
 }
 
 .status-button {
@@ -583,9 +584,12 @@ h2 {
   }
 
   .textbook-range,
-  .test-range,
-  .task-note.empty {
+  .test-range {
     display: none;
+  }
+
+  .task-note {
+    grid-column: 3 / -1;
   }
 }
 
@@ -623,6 +627,10 @@ h2 {
 
   .task-row {
     grid-template-columns: 68px minmax(92px, 0.8fr) minmax(0, 1fr);
+  }
+
+  .task-note {
+    grid-column: 3 / -1;
   }
 
   .range-pill {
