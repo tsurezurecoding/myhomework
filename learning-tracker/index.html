@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f5ef"><title>のこりノート｜教材の進み具合</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark">✓</span>のこりノート<span class="brand-sub">MY STUDY SHELF</span></a><button id="backup" class="quiet">記録を保存・復元 <span aria-hidden="true">↗</span></button></header>
+<main>
+  <section class="hero"><div><p class="eyebrow">少しずつ、終わりが見えてくる。</p><h1>あと、どれくらい？</h1><p class="intro">チャレンジも、学校のワークも。<br>残っている単元を、ひとつの場所に。</p></div><div class="hero-note"><span class="note-icon" aria-hidden="true">▤</span><strong>最初は「ここまで終わった」でOK。</strong><p>教材をひらいて、終わった単元をまとめて登録。<br>飛ばしたところは、あとから戻せます。</p></div></section>
+  <div id="storage-warning" class="warning" role="alert" hidden></div>
+  <section id="stats" class="stats" aria-label="登録した全教材の進み具合"></section>
+  <div class="workspace"><aside><p class="eyebrow">教科から探す</p><nav id="subjects" aria-label="教科"></nav><div class="sidebar-note"><span class="live-dot"></span> このブラウザに自動保存<p>別の端末では「記録を保存・復元」で引き継げます。</p></div></aside>
+  <section class="shelf"><div class="shelf-heading"><div><p class="eyebrow">YOUR MATERIALS</p><h2 id="shelf-title">すべての教材</h2></div><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="教材・単元を検索" aria-label="教材・単元を検索"></label></div>
+  <div class="filters"><div id="modes" class="tabs" aria-label="進み具合で絞り込む"></div><label class="kind-label"><span class="sr-only">教材の種類</span><select id="kind"><option value="all">すべての種類</option><option>チャレンジ</option><option>ワーク</option><option>テスト対策</option></select></label></div>
+  <p id="result-count" class="result-count" aria-live="polite"></p><div id="books" class="books"></div>
+  <details class="coverage"><summary>取り込んだ教材について <span id="coverage-count"></span></summary><p id="coverage-note"></p><div id="pending"></div><p>教材を追加したいときは、Driveに目次を置いて、このチャットで「目次を取り込んで」と伝えてください。フォルダの自動監視はまだありません。</p><a href="https://drive.google.com/drive/folders/1E50SrZ-3q3ls1GmQ-a3HduVOn6W5mNsn" target="_blank" rel="noopener noreferrer">元のDriveフォルダを開く ↗</a></details>
+  </section></div>
+  <footer>のこりノート <span>完了は、あなたのペースで。</span></footer>
+</main>
+<dialog id="book-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><div><p id="dialog-eyebrow" class="eyebrow"></p><h2 id="dialog-title"></h2></div><button class="icon-button" id="close-book" aria-label="教材を閉じる">×</button></div><div class="dialog-body"><p id="book-note" class="muted"></p><div id="book-stats"></div><section class="bulk"><div><strong>ここまで終わった</strong><p>選んだ単元まで、順番に「完了」にします。</p></div><div class="bulk-controls"><label class="sr-only" for="through">完了した最後の単元</label><select id="through"></select><button id="mark-through" class="primary">まとめて完了</button></div><button id="mark-unstarted" class="text-button">この教材の「未確認」をすべて「未着手」にする</button></section><div class="unit-list-head"><span>単元・取り組む範囲</span><span>進み具合</span></div><div id="units"></div><p class="dialog-tip">途中の単元には「p.20まで」「第2回まで」などをメモできます。</p><a id="source-link" target="_blank" rel="noopener noreferrer">目次の原本を確認 ↗</a></div></dialog>
+<dialog id="backup-dialog" aria-labelledby="backup-title"><div class="dialog-header"><h2 id="backup-title">記録を保存・復元</h2><button id="close-backup" class="icon-button" aria-label="保存・復元を閉じる">×</button></div><div class="dialog-body"><p>進み具合とメモをファイルに保存します。別の端末でも、同じ一覧に記録を引き継げます。</p><button id="export" class="primary">バックアップを保存 ↓</button><hr><h3>バックアップから復元</h3><p class="muted">読み込むファイルに含まれる単元の記録を更新します。含まれない記録はそのままです。</p><label class="file-label">保存したJSONファイルを選択<input id="import" type="file" accept=".json,application/json"></label><div id="import-preview" hidden><p id="import-summary"></p><button id="apply-import" class="primary">この内容で復元</button></div><p id="backup-message" role="status"></p></div></dialog>
+<div id="toast" class="toast" role="status" hidden><span id="toast-text"></span><button id="undo" hidden>元に戻す</button></div>
+<script type="module" src="app.js"></script>
+</body></html>
+
