@@ -35,5 +35,3 @@ $('coverage-count').textContent='14ファイル / '+catalog.books.length+'教材
 for(const p of catalog.pending){const item=node('p','pending-item');const link=node('a','',p.title);link.href=sourceUrl(p.sourceId);link.target='_blank';link.rel='noopener noreferrer';item.append(link,document.createTextNode(' — '+p.reason));$('pending').append(item);}
 fetch('./sources.json').then(r=>{if(!r.ok)throw new Error('sources');return r.json();}).then(data=>sources=data).catch(()=>{});
 render();
-
-
