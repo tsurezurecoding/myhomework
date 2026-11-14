@@ -1,0 +1,18 @@
+.exam-panel{background:#fffef9;border:1px solid #d2ddce;border-radius:16px;padding:24px;margin:0 0 28px;line-height:1.85}
+.range-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.range-toolbar h2{margin:0;font-size:21px}.range-toolbar .eyebrow{margin-bottom:5px}
+.range-choice{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+.range-choice select{border:1px solid #cad5c3;border-radius:8px;background:white;padding:10px 14px;color:var(--green);font-weight:700;max-width:100%}
+.exam-panel p{font-size:12px;color:#56665d;margin:14px 0 0}.exam-panel details{margin-top:16px;font-size:12px}.exam-panel summary{cursor:pointer;color:var(--green);font-weight:700}
+#range-summary{font-weight:700;color:var(--green)}.school-range{margin:16px 0;padding-top:10px;border-top:1px solid var(--line)}
+.school-range h3{font-size:14px;margin:0}.school-range p{margin:6px 0;overflow-wrap:anywhere}
+.range-book-note{font-size:10px;color:#94612e;margin:12px 0 0}
+.show-outside{display:flex;align-items:center;gap:8px;font-size:12px;margin:16px 0;color:var(--green)}
+.unit-range{margin:12px 0 0 40px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:11px}
+.unit-range label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted)}
+.unit-range select{font-size:11px;border:1px solid var(--line);background:white;border-radius:6px;padding:7px;color:inherit;max-width:100%}
+.range-badge{border-radius:5px;padding:3px 8px;background:#e5efe8;color:#39745b;font-weight:700;white-space:nowrap}
+.range-partial{background:#fff0dd;color:#9d6126}.range-review{background:#fff0dd;color:#9d6126}.range-out{background:#eceee9;color:#6d7a73}
+.range-detail{flex-basis:100%;line-height:1.9;color:#6d7a73;margin:0;overflow-wrap:anywhere}
+.unit[data-range=out] .unit-main{opacity:.65}
+@media(max-width:700px){.exam-panel{padding:18px}.range-toolbar h2{font-size:19px}.range-choice{width:100%;justify-content:space-between;flex-wrap:wrap}.unit-range{margin-left:34px}.exam-panel p{font-size:11px}}

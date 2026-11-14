@@ -1,3 +1,4 @@
+import {validateRangeSettings} from './exam-ranges.js';
 export const STORAGE_KEY='study-shelf.progress.v1';
 export const statuses={unknown:'未確認',todo:'未着手',doing:'途中',done:'完了',skip:'対象外'};
 export const emptyRecord=()=>({status:'unknown',note:''});
@@ -14,6 +15,8 @@ export function validateBackup(value,catalog){
     if(!r||typeof r!=='object'||!Object.hasOwn(statuses,r.status)||typeof r.note!=='string'||r.note.length>1000)throw new Error('進捗データの形式が正しくありません。');
     clean[id]={status:r.status,note:r.note};
   }
-  return {records:clean,ignored};
+  const result={records:clean,ignored};
+  if(value.rangeSettings!==undefined)result.rangeSettings=validateRangeSettings(value.rangeSettings,catalog);
+  return result;
 }
-export function makeBackup(records,catalog){return {schemaVersion:1,catalogId:catalog.id,exportedAt:new Date().toISOString(),records};}
+export function makeBackup(records,catalog,rangeSettings){return {schemaVersion:1,catalogId:catalog.id,exportedAt:new Date().toISOString(),records,...(rangeSettings?{rangeSettings}:{})};}

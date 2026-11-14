@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102a43" />
+    <meta name="description" content="2026年11月18日〜20日、1年生2学期期末テストの日程・8教科の範囲・提出物・持ち物。" />
+    <title>2学期期末テスト｜今日のまなびボード</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="title-block">
+          <p class="eyebrow">TEST RANGE / STUDY PLANNER</p>
+          <h1>2学期期末テスト</h1>
+          <p class="header-note">令和8年度・1年生 ｜ 2026年11月18日（水）〜20日（金）<br />教科名を押すと、テスト範囲・提出物・持ち物を確認できます。</p>
+          <nav class="page-nav" aria-label="ページ移動">
+            <a href="../">今日のまなびボード</a>
+            <a href="../../learning-tracker/">ワーク・チャレンジの範囲と進捗</a>
+            <span aria-current="page">2学期期末テスト</span>
+          </nav>
+        </div>
+      </header>
+
+      <section class="task-panel exam-overview" aria-labelledby="examScheduleTitle">
+        <h2 id="examScheduleTitle">テスト日程</h2>
+        <div class="exam-table-wrap">
+          <table class="exam-schedule">
+            <caption class="sr-only">2学期期末テストの時間割。3日とも給食あり。</caption>
+            <thead><tr><th scope="col">日付</th><th scope="col">1限</th><th scope="col">2限</th><th scope="col">3限</th><th scope="col">4限</th><th scope="col">給食</th></tr></thead>
+            <tbody id="examSchedule"></tbody>
+          </table>
+        </div>
+        <p class="exam-source-note">学校配布の範囲表から転記。提出期限の矛盾は各教科に「要確認」と記載しています。</p>
+        <nav id="examSubjectLinks" class="exam-subject-links" aria-label="教科別の範囲へ移動"></nav>
+        <details class="exam-sources"><summary>原紙を確認する（2枚）</summary><ul>
+          <li><a href="./assets/2026-term2-final-day1.png" target="_blank" rel="noopener">時間割・英語・保体・美術</a></li>
+          <li><a href="./assets/2026-term2-final-day2-3.png" target="_blank" rel="noopener">国語・数学・音楽・理科・社会</a></li>
+        </ul></details>
+      </section>
+
+      <section class="exam-content" aria-labelledby="examRangesTitle">
+        <h2 id="examRangesTitle">教科別の範囲・提出物</h2>
+        <div id="examSubjects" class="exam-grid"></div>
+      </section>
+      <noscript><p class="task-panel">教科別の一覧表示にはJavaScriptが必要です。<a href="./assets/2026-term2-final-day1.png">時間割・1日目の原紙</a>、<a href="./assets/2026-term2-final-day2-3.png">2・3日目の原紙</a>で確認できます。</p></noscript>
+
+      <details class="previous-exam">
+        <summary>以前の学習課題（1学期・スプレッドシート）</summary>
+        <p class="exam-source-note">以下は1学期の課題データです。今回の2学期期末の範囲・進捗とは別の一覧です。</p>
+      <section class="control-panel" aria-label="以前のテスト範囲の絞り込み">
+        <div class="filters compact-controls">
+          <fieldset class="choice-group">
+            <legend>範囲</legend>
+            <label><input type="radio" name="scopeMode" value="lesson" id="scopeLesson" checked /> <span>授業済みまで</span></label>
+            <label><input type="radio" name="scopeMode" value="final" id="scopeFinal" /> <span>期末範囲まで</span></label>
+          </fieldset>
+          <fieldset class="choice-group">
+            <legend>条件</legend>
+            <label><input type="radio" name="completionMode" value="remaining" id="completionRemaining" checked /> <span>未完了のみ</span></label>
+            <label><input type="radio" name="completionMode" value="today" id="completionToday" /> <span>今日やるやつ</span></label>
+            <label><input type="radio" name="completionMode" value="all" id="completionAll" /> <span>完了含む</span></label>
+            <label><input id="includeMidterm" type="checkbox" /> <span>1学期中間も対象</span></label>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="task-panel" aria-label="テスト対策課題">
+        <div class="list-toolbar">
+          <div>
+            <h2 id="listTitle">課題一覧</h2>
+            <p id="listSubtitle">条件に合う課題を表示しています。</p>
+          </div>
+          <div class="list-counts">
+            <span><b id="visibleCount">0</b>件表示</span>
+            <span>今日 <b id="todayCount">0</b></span>
+            <span>残り <b id="remainingCount">0</b></span>
+            <span>完了 <b id="completedCount">0</b></span>
+            <span class="sr-only" id="rangeCount">0</span>
+            <span class="sr-only" id="totalCount">0</span>
+          </div>
+        </div>
+        <div id="taskList" class="task-list"></div>
+      </section>
+      </details>
+    </main>
+
+    <script src="./final-exam-data.js"></script>
+    <script src="./final-exam.js"></script>
+    <script src="../src/features/app-data.js"></script>
+    <script src="../src/features/app.js"></script>
+  </body>
+</html>
